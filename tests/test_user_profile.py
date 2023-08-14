@@ -34,7 +34,7 @@ async def test_len_username():
 @pytest.mark.asyncio
 async def test_insert_username():
     user_id = '2b2d45e4-2192-4cfb-a551-ad2066a019e8'
-    user_profile = UserProfile(user_id=user_id, username='beka08', first_name='Kostya', last_name='Katnikov')
+    user_profile = UserProfile(user_id=user_id, username='beka.08', first_name='Kostya', last_name='Katnikov')
     assert isinstance(user_profile, UserProfile)
 
 
@@ -42,7 +42,7 @@ async def test_insert_username():
 async def test_action_create_user_profile():
     event = UserProfileEvent(
                             user_id='87077fbf-73ec-4f6c-8c72-13bf627d05be',
-                            username='rbekzhan',
+                            username='r.bekzhan',
                             first_name='Bekzhan',
                             last_name='Rakhmetzhan',
                             bio='tester'

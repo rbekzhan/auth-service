@@ -29,3 +29,11 @@ class AuthDBManagerAbstract(ABC):
     @abstractmethod
     async def search_account(self, user_id, phone_number) -> t.Dict:
         pass
+
+    @abstractmethod
+    async def search_account_by_id_or_phone_number(self, user_id: str = None, phone_number: str = None) -> t.Dict:
+        pass
+
+    @abstractmethod
+    async def get_all_my_contact(self, user_id):
+        pass

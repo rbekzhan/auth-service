@@ -16,3 +16,7 @@ async def action_contact_save(event: Event, db_manager: DBManager):
     return {"msg": "contact save"}
 
 
+async def action_get_all_my_contact(user_id: str, db_manager: DBManager):
+    return await db_manager.get_all_my_contact(user_id)
+
+

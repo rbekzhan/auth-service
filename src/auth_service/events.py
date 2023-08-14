@@ -21,6 +21,7 @@ class UserProfileEvent:
     username: str = attr.ib(validator=attr.validators.instance_of(str))
     first_name: str = attr.ib(default=None, validator=attr.validators.instance_of((str, type(None))))
     last_name: str = attr.ib(default=None, validator=attr.validators.instance_of((str, type(None))))
+    avatar_path: str = attr.ib(default=None, validator=attr.validators.instance_of((str, type(None))))
     bio: str = attr.ib(default=None, validator=attr.validators.instance_of((str, type(None))))
 
 

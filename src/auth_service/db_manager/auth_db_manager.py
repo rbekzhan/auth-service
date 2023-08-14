@@ -15,7 +15,7 @@ from sqlalchemy.exc import IntegrityError
 
 from auth_service.domain.user import User
 from auth_service.domain.user_profile import UserProfile
-from auth_service.schemas import UserProfileSchema, GetAccountWithContact
+from auth_service.schemas import UserProfileSchema, GetAccountWithContact, GetAccountInfoById
 
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
 log = logging.getLogger(__name__)
@@ -89,7 +89,7 @@ class DBManager(DBManagerBase, AuthDBManagerAbstract):
                 account = insert(AccountTable)
                 account = account.values(user_id=user_profile.user_id, username=user_profile.username,
                                          first_name=user_profile.first_name, last_name=user_profile.last_name,
-                                         bio=user_profile.bio)
+                                         avatar_path=user_profile.avatar_path, bio=user_profile.bio)
                 account = account.returning(AccountTable)
                 cursor = await connection.execute(account)
                 return UserProfileSchema().dump(cursor.first())
@@ -107,14 +107,14 @@ class DBManager(DBManagerBase, AuthDBManagerAbstract):
             )
             await connection.execute(query)
 
-    async def search_account(self, user_id, phone_number) -> t.Dict:  # sobwti kaida jazadi account_id or user_id
+    async def search_account(self, user_id, phone_number) -> t.Dict:
         async with self.engine.begin() as connection:
             query = text(f""" with contact as (select first_name, last_name, phone_number, user_id
                                               from contacts
                                               where user_id = '{user_id}'
                                               )
                                               
-                                    select contacts.*, accounts.username
+                                    select contacts.*, accounts.username, accounts.avatar_path 
                                     from contacts
                                     join users on users.phone_number  = contacts.phone_number
                                     join accounts on accounts.user_id = users.id
@@ -123,3 +123,29 @@ class DBManager(DBManagerBase, AuthDBManagerAbstract):
             cursor = await connection.execute(query)
             return GetAccountWithContact().dump(cursor.first())
 
+    async def search_account_by_id_or_phone_number(self, user_id: str = None, phone_number: str = None) -> t.Dict:
+        async with self.engine.begin() as connection:
+            query = text(f"""select accounts.*
+                             from users 
+                             join accounts on users.id = accounts.user_id 
+                             where (accounts.user_id = :user_id or users.phone_number = :phone_number)"""
+                         )
+            params = {'user_id': user_id,
+                      'phone_number': phone_number}
+            cursor = await connection.execute(query, params)
+            return GetAccountInfoById().dump(cursor.first())
+
+    async def get_all_my_contact(self, user_id):
+        async with self.engine.begin() as connection:
+            query = text(f""" with contact as (select first_name, last_name, phone_number, user_id
+                                              from contacts
+                                              where user_id = '{user_id}'
+                                              )
+                                              
+                                    select contacts.*, accounts.username, accounts.avatar_path 
+                                    from contacts
+                                    join users on users.phone_number  = contacts.phone_number
+                                    join accounts on accounts.user_id = users.id
+                        """)
+            cursor = await connection.execute(query)
+            return GetAccountWithContact(many=True).dump(cursor)

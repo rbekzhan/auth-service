@@ -49,4 +49,13 @@ class GetAccountWithContact(Schema):
     username: str = fields.Str()
     first_name: str = fields.Str()
     last_name: str = fields.Str()
+    avatar_path: str = fields.Str()
 
+
+class GetAccountInfoById(Schema):
+    user_id: str = fields.Str()
+    username: str = fields.Str()
+    avatar_path: str = fields.Str()
+    first_name: str = fields.Str()
+    last_name: str = fields.Str()
+    bio: str = fields.Str()

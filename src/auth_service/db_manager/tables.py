@@ -34,6 +34,7 @@ AccountTable = sa.Table(
     sa.Column("first_name", sa.String, nullable=True),
     sa.Column("last_name", sa.String, nullable=True),
     sa.Column("bio", sa.String, nullable=True),
+    sa.Column("avatar_path", sa.String, nullable=True),
     sa.Column("created_at", sa.DateTime, default=datetime.utcnow),
     sa.Column("updated_at", sa.DateTime, onupdate=datetime.utcnow)
 )

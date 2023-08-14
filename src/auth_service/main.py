@@ -4,7 +4,8 @@ from aiohttp import web
 
 from auth_service.config import SECRET_KEY
 from auth_service.db_manager.auto_migrate import run_migrations
-from auth_service.handlers import send_sms_user, verify_code, account_create, contacts_save
+from auth_service.handlers import send_sms_user, verify_code, account_create, contacts_save, \
+    get_account_by_id_or_phone_number, get_all_my_contact
 from asyncio.log import logger
 
 
@@ -76,6 +77,8 @@ app.add_routes([web.post('/send-sms', send_sms_user)])
 app.add_routes([web.post('/verify-code', verify_code)])
 app.add_routes([web.post('/account-create', account_create)])
 app.add_routes([web.post('/contact-save', contacts_save)])
+app.add_routes([web.post('/account-info', get_account_by_id_or_phone_number)])
+app.add_routes([web.get('/get-all-my-contact', get_all_my_contact)])
 
 
 def start():
