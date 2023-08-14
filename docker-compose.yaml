@@ -1,0 +1,36 @@
+version: "3.7"
+
+
+services:
+    web:
+        container_name: auth-service
+        build: .
+        ports:
+            - "8050:8000"
+        restart: always
+        environment:
+            - SECRET_KEY=y4j9g2m99qf4mtu743gsgunysjyz5bbt3kqkc7aeg5gqqz7r64ajdjbr9n4f45nf
+            - AUTH_DB_USER_NAME=auth_user
+            - AUTH_DB_USER_PASSWORD=123321
+            - AUTH_DB_NAME=auth_db
+            - AUTH_DB_HOST=postgres
+            - AUTH_DB_PORT=5432
+        depends_on:
+            - postgres
+
+    postgres:
+        container_name: auth-postgres
+        image: postgres:13.3
+        restart: always
+        shm_size: 1g
+        environment:
+            - AUTH_POSTGRES_DB=auth_db
+            - AUTH_POSTGRES_USER=auth_user
+            - AUTH_POSTGRES_PASSWORD=123321
+        ports:
+            - "8336:5432"
+        volumes:
+            - ./.pg_data/postgresql:/var/lib/postgresql/data
+            - ./.pg_data/db_entrypoint:/docker-entrypoint-initdb.d
+
+

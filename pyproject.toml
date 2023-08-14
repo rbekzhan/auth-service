@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "auth_service"
+version = "0.1.0"
+description = ""
+authors = ["bekzhan"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+aiohttp = "^3.8.4"
+alembic = "^1.11.1"
+pytest = "^7.4.0"
+pytz = "^2023.3"
+passlib = "^1.7.4"
+asyncpg = "^0.28.0"
+greenlet = "^2.0.2"
+marshmallow = "^3.19.0"
+pyjwt = "^2.8.0"
+pytest-asyncio = "^0.21.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+run-api = "auth_service.main:start"
+
+
+
+[tool.poe.tasks]
+lint = "poetry run pylama ./src --ignore E501 --linters print,pyflakes --format pylint"
+clear = "find src -regex '^.*\\(__pycache__\\|\\.py[co]\\)$' -delete"
