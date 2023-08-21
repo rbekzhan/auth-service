@@ -37,7 +37,7 @@ class MockDBManager(AuthDBManagerAbstract):
     async def contact_save(self, contact: Contact) -> None:
         pass
 
-    async def search_account(self, user_id, phone_number) -> t.Dict:
+    async def search_contact_account(self, user_id, phone_number) -> t.Dict:
         return {
                 "last_name": "Rakhmetzhan",
                 "user_id": "664e623b-a85c-4a41-84d5-d666b34f530c",

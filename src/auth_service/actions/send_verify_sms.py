@@ -1,8 +1,7 @@
 import typing
-from abc import ABC, abstractmethod
-
 import jwt
 
+from abc import ABC, abstractmethod
 from auth_service.config import SECRET_KEY
 from auth_service.db_manager.auth_db_manager_abstract import AuthDBManagerAbstract as DBManager
 from auth_service.domain.sms_confirmation import SMSConfirmation

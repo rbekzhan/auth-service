@@ -1,13 +1,12 @@
 from marshmallow import EXCLUDE, post_load, fields, Schema
-
-from auth_service.events import RegisterEvent, VerifyCodeEvent, UserProfileEvent, ContactEvent
+from auth_service.events import VerifyCodeEvent, UserProfileEvent, ContactEvent
 
 
 class UserProfileSchema(Schema):
     user_id: str = fields.Str()
     username: str = fields.Str()
-    first_name: str = fields.Str()
-    last_name: str = fields.Str()
+    name: str = fields.Str()
+    surname: str = fields.Str()
     bio: str = fields.Str(default=None)
 
     class Meta:
@@ -33,8 +32,8 @@ class VerifyCodeSchema(Schema):
 class ContactSchema(Schema):
     user_id: str = fields.Str()
     phone_number: str = fields.Str()
-    first_name: str = fields.Str()
-    last_name: str = fields.Str()
+    name: str = fields.Str()
+    surname: str = fields.Str()
 
     class Meta:
         unknown = EXCLUDE

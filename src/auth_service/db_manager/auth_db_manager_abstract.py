@@ -1,5 +1,6 @@
-from abc import ABC, abstractmethod
 import typing as t
+
+from abc import ABC, abstractmethod
 from auth_service.domain.contact import Contact
 from auth_service.domain.sms_confirmation import SMSConfirmation
 from auth_service.domain.user_profile import UserProfile
@@ -27,7 +28,7 @@ class AuthDBManagerAbstract(ABC):
         pass
 
     @abstractmethod
-    async def search_account(self, user_id, phone_number) -> t.Dict:
+    async def search_contact_account(self, user_id, phone_number) -> t.Dict:
         pass
 
     @abstractmethod
@@ -36,4 +37,8 @@ class AuthDBManagerAbstract(ABC):
 
     @abstractmethod
     async def get_all_my_contact(self, user_id):
+        pass
+
+    @abstractmethod
+    async def get_my_account(self, user_id):
         pass

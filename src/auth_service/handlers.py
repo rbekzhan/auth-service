@@ -2,14 +2,12 @@ import json
 import typing
 
 from aiohttp import web
-
 from auth_service.actions.contact import action_contact_save, action_get_all_my_contact
-from auth_service.actions.get_account import action_search_account_by_id_or_phone_number
+from auth_service.actions.get_account import action_search_account_by_id_or_phone_number, action_get_my_account
 from auth_service.actions.user_profile import action_create_user_profile
 from auth_service.db_manager.auth_db_manager import DBManager
-
 from auth_service.actions.send_verify_sms import action_create_sms, action_verify_sms
-from auth_service.events import RegisterEvent, VerifyCodeEvent, UserProfileEvent, ContactEvent
+from auth_service.events import VerifyCodeEvent, UserProfileEvent, ContactEvent
 from auth_service.helper import extract_user_id_from_token
 from auth_service.schemas import VerifyCodeSchema, UserProfileSchema, ContactSchema
 
@@ -52,9 +50,10 @@ async def contacts_save(request: web.Request):
 
 
 async def get_account_by_id_or_phone_number(request: web.Request):
-    body: typing.Dict = await request.json()
-    result = await action_search_account_by_id_or_phone_number(user_id=body.get('user_id', None),
-                                                               phone_number=body.get('phone_number', None),
+    user_id = request.query.get('user_id')
+    phone_number = request.query.get('phone_number')
+    result = await action_search_account_by_id_or_phone_number(user_id=user_id,
+                                                               phone_number=phone_number,
                                                                db_manager=DBManager())
     return web.json_response(data=result)
 
@@ -65,4 +64,13 @@ async def get_all_my_contact(request: web.Request):
         return web.json_response(data={"msg": "token required"})
     user_id = extract_user_id_from_token(token)
     result = await action_get_all_my_contact(user_id=user_id, db_manager=DBManager())
+    return web.json_response(data=result)
+
+
+async def get_my_account(request: web.Request):
+    token = request.headers.get('Authorization')
+    if token is None:
+        return web.json_response(data={"msg": "token required"})
+    user_id = extract_user_id_from_token(token)
+    result = await action_get_my_account(user_id=user_id, db_manager=DBManager())
     return web.json_response(data=result)

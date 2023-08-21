@@ -29,4 +29,3 @@ class Contact:
         pattern = r'^\+[0-9]+$'
         if re.match(pattern, phone_number) is None:
             raise ValueError("Invalid phone number format")
-
