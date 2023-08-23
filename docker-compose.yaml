@@ -3,10 +3,10 @@ version: "3.7"
 
 services:
     web:
-        container_name: auth-service
+        container_name: auth_service
         build: .
         ports:
-            - "8050:8083"
+            - "60004:60004"
         restart: always
         environment:
             - DB_SERVICE_IP=77.240.38.184

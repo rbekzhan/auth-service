@@ -1,11 +1,8 @@
 import json
-import jwt
 from aiohttp import web
 
-from auth_service.config import SECRET_KEY
-# from auth_service.db_manager.auto_migrate import run_migrations
-from auth_service.handlers import send_sms_user, verify_code, account_create, contacts_save, \
-    get_account_by_id_or_phone_number, get_all_my_contact, get_my_account, save_all_contacts
+from auth_service.handlers import send_sms_user, verify_code, account_create, contacts_save, get_all_my_contact
+from auth_service.handlers import get_account_by_id_or_phone_number, get_my_account, save_all_contacts
 from asyncio.log import logger
 
 
@@ -43,27 +40,6 @@ async def middleware_handler(request, handler) -> [json_error, web.Response]:
         return json_error(500, e)
 
 
-#
-# async def check_token(app: web.Application, handler):
-#     async def authenticate(request):
-#         token = request.headers.get('Authorization')
-#         token: str = token.split(' ')[1]
-#         response = await handler(request)
-#         if not token:
-#             return web.json_response({'error': 'Missing token'}, status=401)
-#         try:
-#             print('sfdg')
-#             print(jwt.decode(token, SECRET_KEY, algorithms=['HS256']), 'asfdsg')
-#             decoded_token = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-#             # request['user'] = decoded_token
-#         except jwt.InvalidTokenError as inv:
-#             return json_error(500, inv)
-#
-#         return response
-#
-#     return authenticate
-
-
 app = web.Application(middlewares=[middleware_handler])
 app.add_routes([web.post('/api/v1.0/send-sms', send_sms_user)])
 app.add_routes([web.post('/api/v1.0/verify-code', verify_code)])
@@ -78,4 +54,4 @@ app.add_routes([web.post('/api/v1.0/contacts-save', save_all_contacts)])
 
 
 def start():
-    web.run_app(app, port=8083)
+    web.run_app(app, port=60004)
