@@ -43,8 +43,11 @@ async def action_verify_sms(event, db_manager: DBManager):
         sms_confirmation.set_user(user=user)
 
     await db_manager.update_sms_confirmation(sms_confirmation=sms_confirmation)
+    my_user_profile = await db_manager.get_my_account(user_id=sms_confirmation.user_id)
 
     if sms_confirmation.confirm_code:
-        return {"access_token": jwt.encode({"user_id": sms_confirmation.user_id}, SECRET_KEY, algorithm="HS256")}
+        return {"access_token": jwt.encode({"user_id": sms_confirmation.user_id}, SECRET_KEY, algorithm="HS256"),
+                "my_user_profile": my_user_profile
+                }
 
     return {"msg": "code is not correct"}

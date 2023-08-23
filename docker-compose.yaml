@@ -8,3 +8,6 @@ services:
         ports:
             - "8050:8083"
         restart: always
+        environment:
+            - DB_SERVICE_IP=172.20.18.91
+            - DB_SERVICE_PORT=8034

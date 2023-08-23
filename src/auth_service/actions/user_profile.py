@@ -8,5 +8,4 @@ async def action_create_user_profile(event: Event, db_manager: DBManager):
                                last_name=event.surname, avatar_path=event.avatar_path, bio=event.bio)
     user_profile.is_valid_username()
 
-    result = await db_manager.create_account(user_profile=user_profile)
-    return result
+    return await db_manager.create_account(user_profile=user_profile)

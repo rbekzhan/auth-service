@@ -7,9 +7,9 @@ from auth_service.actions.get_account import action_search_account_by_id_or_phon
 from auth_service.actions.user_profile import action_create_user_profile
 from auth_service.db_manager.auth_db_manager import DBManager
 from auth_service.actions.send_verify_sms import action_create_sms, action_verify_sms
-from auth_service.events import VerifyCodeEvent, UserProfileEvent, ContactEvent
+from auth_service.events import VerifyCodeEvent, UserProfileEvent, ContactEvent, ContactsEvent
 from auth_service.helper import extract_user_id_from_token
-from auth_service.schemas import VerifyCodeSchema, UserProfileSchema, ContactSchema
+from auth_service.schemas import VerifyCodeSchema, UserProfileSchema, ContactSchema, ContactsSaveSchema
 
 
 async def send_sms_user(request: web.Request) -> json:
@@ -74,3 +74,20 @@ async def get_my_account(request: web.Request):
     user_id = extract_user_id_from_token(token)
     result = await action_get_my_account(user_id=user_id, db_manager=DBManager())
     return web.json_response(data=result)
+
+
+async def save_all_contacts(request: web.Request):
+    token = request.headers.get('Authorization')
+    if token is None:
+        return web.json_response(data={"msg": "token required"})
+    user_id = extract_user_id_from_token(token)
+    body: typing.Dict = await request.json()
+
+    contacts = body.get('contacts')
+
+    events: typing.List[ContactsEvent] = []
+    for contact in contacts:
+        event: ContactsEvent = ContactsSaveSchema().load(data=contact | {"user_id": user_id})
+        events.append(event)
+
+    return web.json_response(data={'result': 'test'})

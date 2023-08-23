@@ -42,3 +42,7 @@ class AuthDBManagerAbstract(ABC):
     @abstractmethod
     async def get_my_account(self, user_id):
         pass
+
+    @abstractmethod
+    async def save_all_contacts(self, contact: Contact):
+        pass

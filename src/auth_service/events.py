@@ -1,5 +1,6 @@
 import attr
 import uuid
+import typing as t
 
 
 @attr.define
@@ -29,5 +30,13 @@ class UserProfileEvent:
 class ContactEvent:
     user_id: uuid = attr.ib(validator=attr.validators.instance_of(str))
     phone_number: str = attr.ib(validator=attr.validators.instance_of(str))
+    name: str = attr.ib(default=None, validator=attr.validators.instance_of((str, type(None))))
+    surname: str = attr.ib(default=None, validator=attr.validators.instance_of((str, type(None))))
+
+
+@attr.define
+class ContactsEvent:
+    user_id: uuid = attr.ib(validator=attr.validators.instance_of(str))
+    phone_number: t.List[str] = attr.ib(validator=attr.validators.instance_of(list))
     name: str = attr.ib(default=None, validator=attr.validators.instance_of((str, type(None))))
     surname: str = attr.ib(default=None, validator=attr.validators.instance_of((str, type(None))))

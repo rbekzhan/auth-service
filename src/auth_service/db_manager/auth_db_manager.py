@@ -82,7 +82,6 @@ class DBManager(DBTools, AuthDBManagerAbstract):
                                         "surname": contact.last_name
                                     }
                                     )
-        print(result)
 
     async def search_contact_account(self, user_id, phone_number) -> t.Dict:
         result = await self.db_get(url=f"{DB_SERVICE_URL}/api/v1.0/contacts/{phone_number}/{user_id}")
@@ -105,3 +104,6 @@ class DBManager(DBTools, AuthDBManagerAbstract):
     async def get_my_account(self, user_id):
         result = await self.db_get(url=f"{DB_SERVICE_URL}/api/v1.0/my-account/{user_id}")
         return result
+
+    async def save_all_contacts(self, contact: Contact):
+        pass

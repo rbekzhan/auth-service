@@ -1,5 +1,7 @@
+import typing as t
+
 from marshmallow import EXCLUDE, post_load, fields, Schema
-from auth_service.events import VerifyCodeEvent, UserProfileEvent, ContactEvent
+from auth_service.events import VerifyCodeEvent, UserProfileEvent, ContactEvent, ContactsEvent
 
 
 class UserProfileSchema(Schema):
@@ -58,3 +60,17 @@ class GetAccountInfoById(Schema):
     first_name: str = fields.Str()
     last_name: str = fields.Str()
     bio: str = fields.Str()
+
+
+class ContactsSaveSchema(Schema):
+    user_id: str = fields.Str()
+    phone_number: t.List = fields.List(fields.Str)
+    name: str = fields.Str()
+    surname: str = fields.Str()
+
+    class Meta:
+        unknown = EXCLUDE
+
+    @post_load()
+    def make_object(self, data, **kwargs):
+        return ContactsEvent(**data)
