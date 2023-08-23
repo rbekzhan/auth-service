@@ -9,5 +9,5 @@ services:
             - "8050:8083"
         restart: always
         environment:
-            - DB_SERVICE_IP=172.20.18.91
-            - DB_SERVICE_PORT=8034
+            - DB_SERVICE_IP=77.240.38.184
+            - DB_SERVICE_PORT=60002
