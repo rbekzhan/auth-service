@@ -45,7 +45,7 @@ app.add_routes([web.post('/api/v1.0/send-sms', send_sms_user)])
 app.add_routes([web.post('/api/v1.0/verify-code', verify_code)])
 
 app.add_routes([web.get('/api/v1.0/accounts', get_account_by_id_or_phone_number)])
-app.add_routes([web.get('/api/v1.0/my-account', get_my_account)])
+app.add_routes([web.get('/api/v1.0/profiles', get_my_account)])
 app.add_routes([web.post('/api/v1.0/accounts', account_create)])
 
 app.add_routes([web.get('/api/v1.0/contacts', get_all_my_contact)])
