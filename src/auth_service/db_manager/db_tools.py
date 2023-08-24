@@ -20,6 +20,8 @@ class DBTools:
                     result: t.Dict = await resp.json()
                     if resp.status == 404:
                         raise NotFoundError("Not found")
+        except NotFoundError:
+            raise NotFoundError("Not found")
         except Exception as e:
             self._log.exception(e)
             raise ValueError("Something went wrong")
