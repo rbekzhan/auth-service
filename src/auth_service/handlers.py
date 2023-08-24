@@ -2,7 +2,7 @@ import json
 import typing
 
 from aiohttp import web
-from auth_service.actions.contact import action_contact_save, action_get_all_my_contact
+from auth_service.actions.contact import action_contact_save, action_get_all_my_contact, action_save_all_contacts
 from auth_service.actions.get_account import action_search_account_by_id_or_phone_number, action_get_my_account
 from auth_service.actions.user_profile import action_create_user_profile
 from auth_service.db_manager.auth_db_manager import DBManager
@@ -89,5 +89,5 @@ async def save_all_contacts(request: web.Request):
     for contact in contacts:
         event: ContactsEvent = ContactsSaveSchema().load(data=contact | {"user_id": user_id})
         events.append(event)
-
+    await action_save_all_contacts(event=events, db_manager=DBManager())
     return web.json_response(data={'result': 'test'})
