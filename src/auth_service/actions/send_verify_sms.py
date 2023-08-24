@@ -1,4 +1,7 @@
+import secrets
 import typing
+from datetime import timedelta, datetime
+
 import jwt
 
 from abc import ABC, abstractmethod
@@ -46,7 +49,18 @@ async def action_verify_sms(event, db_manager: DBManager):
     my_user_profile = await db_manager.get_my_account(user_id=sms_confirmation.user_id)
 
     if sms_confirmation.confirm_code:
+        def generate_refresh_token(user_id):
+            refresh_token_payload = {
+                "user_id": user_id,
+                "exp": datetime.utcnow() + timedelta(days=30)  # Например, токен действителен 30 дней
+            }
+            refresh_token = jwt.encode(refresh_token_payload, SECRET_KEY, algorithm="HS256")
+            return refresh_token
+
         return {"access_token": jwt.encode({"user_id": sms_confirmation.user_id}, SECRET_KEY, algorithm="HS256"),
+                "refresh_token": jwt.encode({"user_id": sms_confirmation.user_id,
+                                             "exp": datetime.utcnow() + timedelta(days=30)}, SECRET_KEY,
+                                            algorithm="HS256"),
                 "my_user_profile": my_user_profile
                 }
 

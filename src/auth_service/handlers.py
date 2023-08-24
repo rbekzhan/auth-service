@@ -1,5 +1,5 @@
 import json
-import typing
+import typing as t
 
 from aiohttp import web
 from auth_service.actions.contact import action_contact_save, action_get_all_my_contact, action_save_all_contacts
@@ -12,9 +12,11 @@ from auth_service.helper import extract_user_id_from_token
 from auth_service.schemas import VerifyCodeSchema, UserProfileSchema, ContactSchema, ContactsSaveSchema
 
 
+# TODO перебрать код по Exception
+
 async def send_sms_user(request: web.Request) -> json:
-    body: typing.Dict = await request.json()
-    result: typing.Dict = await action_create_sms(phone_number=body['phone_number'], db_manager=DBManager())
+    body: t.Dict = await request.json()
+    result: t.Dict = await action_create_sms(phone_number=body['phone_number'], db_manager=DBManager())
     return web.json_response(data=result)
 
 
@@ -70,9 +72,10 @@ async def get_all_my_contact(request: web.Request):
 async def get_my_account(request: web.Request):
     token = request.headers.get('Authorization')
     if token is None:
-        return web.json_response(data={"msg": "token required"})
+        # TODO: создать отдельный exception
+        raise ValueError("token required")
     user_id = extract_user_id_from_token(token)
-    result = await action_get_my_account(user_id=user_id, db_manager=DBManager())
+    result: t.Dict = await action_get_my_account(user_id=user_id, db_manager=DBManager())
     return web.json_response(data=result)
 
 
@@ -81,11 +84,11 @@ async def save_all_contacts(request: web.Request):
     if token is None:
         return web.json_response(data={"msg": "token required"})
     user_id = extract_user_id_from_token(token)
-    body: typing.Dict = await request.json()
+    body: t.Dict = await request.json()
 
     contacts = body.get('contacts')
 
-    events: typing.List[ContactsEvent] = []
+    events: t.List[ContactsEvent] = []
     for contact in contacts:
         event: ContactsEvent = ContactsSaveSchema().load(data=contact | {"user_id": user_id})
         events.append(event)

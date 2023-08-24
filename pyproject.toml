@@ -16,6 +16,8 @@ greenlet = "^2.0.2"
 marshmallow = "^3.19.0"
 pyjwt = "^2.8.0"
 pytest-asyncio = "^0.21.1"
+aiomisc = "^17.3.21"
+aiohttp-cors = "^0.7.0"
 
 
 [build-system]
