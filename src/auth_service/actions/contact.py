@@ -1,6 +1,7 @@
 from auth_service.db_manager.auth_db_manager_abstract import AuthDBManagerAbstract as DBManager
 from auth_service.domain.contact import Contact
 from auth_service.events import ContactEvent as Event
+from auth_service.events import ContactsEvent as EventSave
 
 
 async def action_contact_save(event: Event, db_manager: DBManager):
@@ -18,3 +19,13 @@ async def action_contact_save(event: Event, db_manager: DBManager):
 
 async def action_get_all_my_contact(user_id: str, db_manager: DBManager):
     return await db_manager.get_all_my_contact(user_id)
+
+
+async def action_save_all_contacts(event, db_manager: DBManager):
+    for i in event:
+        for number in i.phone_number:
+            contact = Contact(user_id=str(i.user_id),
+                              phone_number=number,
+                              first_name=i.name,
+                              last_name=i.surname)
+            await db_manager.contact_save(contact=contact)
