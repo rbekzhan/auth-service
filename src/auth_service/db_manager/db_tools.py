@@ -4,6 +4,7 @@ import aiohttp
 import typing as t
 
 from auth_service.config import LOGGING_FORMAT
+from auth_service.exception import NotFoundError
 
 
 class DBTools:
@@ -17,6 +18,8 @@ class DBTools:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url=url, params=params) as resp:
                     result: t.Dict = await resp.json()
+                    if resp.status == 404:
+                        raise NotFoundError("Not found")
         except Exception as e:
             self._log.exception(e)
             raise ValueError("Something went wrong")
