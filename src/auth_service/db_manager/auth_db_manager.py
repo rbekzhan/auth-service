@@ -9,6 +9,7 @@ from auth_service.domain.contact import Contact
 from auth_service.domain.sms_confirmation import SMSConfirmation
 from auth_service.domain.user import User
 from auth_service.domain.user_profile import UserProfile
+from auth_service.exception import NotFoundError
 
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
 log = logging.getLogger(__name__)
@@ -26,9 +27,9 @@ class DBManager(DBTools, AuthDBManagerAbstract):
                                             )
 
     async def get_sms_confirmation(self, phone_number: str) -> (SMSConfirmation, None):
-        result: t.Dict = await self.db_get(url=f"{DB_SERVICE_URL}/api/v1.0/sms/{phone_number}")
-
-        if "error" in result and result["error"] == "VerificationCodeNotFoundError":
+        try:
+            result: t.Dict = await self.db_get(url=f"{DB_SERVICE_URL}/api/v1.0/sms/{phone_number}")
+        except NotFoundError:
             return
 
         if result["user_id"]:
