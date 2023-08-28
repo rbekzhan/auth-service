@@ -57,12 +57,17 @@ async def action_verify_sms(event, db_manager: DBManager):
             refresh_token = jwt.encode(refresh_token_payload, SECRET_KEY, algorithm="HS256")
             return refresh_token
 
-        return {"access_token": jwt.encode({"user_id": sms_confirmation.user_id}, SECRET_KEY, algorithm="HS256"),
-                "refresh_token": jwt.encode({"user_id": sms_confirmation.user_id,
-                                             "exp": datetime.utcnow() + timedelta(days=30)}, SECRET_KEY,
-                                            algorithm="HS256"),
-                "my_user_profile": my_user_profile
-                }
+        token = {"access_token": jwt.encode({"user_id": sms_confirmation.user_id}, SECRET_KEY, algorithm="HS256"),
+                 "refresh_token": jwt.encode({"user_id": sms_confirmation.user_id,
+                                              "exp": datetime.utcnow() + timedelta(days=30)}, SECRET_KEY,
+                                             algorithm="HS256"),
+
+                 }
+        if token and my_user_profile['username']:
+            return token | my_user_profile
+
+        elif token:
+            return token
 
     return {"msg": "code is not correct"}
 
