@@ -65,3 +65,7 @@ async def action_verify_sms(event, db_manager: DBManager):
                 }
 
     return {"msg": "code is not correct"}
+
+
+async def action_refresh_token():
+    pass

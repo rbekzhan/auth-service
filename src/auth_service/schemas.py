@@ -10,6 +10,8 @@ class UserProfileSchema(Schema):
     name: str = fields.Str()
     surname: str = fields.Str()
     bio: str = fields.Str(default=None)
+    email: str = fields.Str(default=None)
+    avatar_path: str = fields.Str(default=None)
 
     class Meta:
         unknown = EXCLUDE

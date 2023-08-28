@@ -10,13 +10,15 @@ class UserProfile:
                  first_name: str = None,
                  last_name: str = None,
                  avatar_path: str = None,
-                 bio: str = None):
+                 bio: str = None,
+                 email: str = None):
         self._user_id = user_id
         self._username = username
         self._first_name = first_name
         self._last_name = last_name
         self._avatar_path = avatar_path
         self._bio = bio
+        self._email = email
 
     @property
     def user_id(self):
@@ -42,6 +44,10 @@ class UserProfile:
     @property
     def bio(self) -> str:
         return self._bio
+
+    @property
+    def email(self) -> str:
+        return self._email
 
     def is_valid_username(self):
         # Проверка на длину имени пользователя

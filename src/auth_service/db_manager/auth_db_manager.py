@@ -69,7 +69,8 @@ class DBManager(DBTools, AuthDBManagerAbstract):
                                         "name": user_profile.first_name,
                                         "surname": user_profile.last_name,
                                         "avatar_path": user_profile.avatar_path,
-                                        "bio": user_profile.bio
+                                        "bio": user_profile.bio,
+                                        "email": user_profile.email
                                     }
                                     )
         return result

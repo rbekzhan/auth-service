@@ -23,6 +23,7 @@ class UserProfileEvent:
     name: str = attr.ib(default=None, validator=attr.validators.instance_of((str, type(None))))
     surname: str = attr.ib(default=None, validator=attr.validators.instance_of((str, type(None))))
     avatar_path: str = attr.ib(default=None, validator=attr.validators.instance_of((str, type(None))))
+    email: str = attr.ib(default=None, validator=attr.validators.instance_of((str, type(None))))
     bio: str = attr.ib(default=None, validator=attr.validators.instance_of((str, type(None))))
 
 
