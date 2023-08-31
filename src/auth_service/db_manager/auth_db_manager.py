@@ -80,7 +80,7 @@ class DBManager(DBTools, AuthDBManagerAbstract):
                                     payload={
                                         "user_id": str(contact.user_id),
                                         "phone_number": contact.phone_number,
-                                        "name": contact.last_name,
+                                        "name": contact.first_name,
                                         "surname": contact.last_name
                                     }
                                     )
