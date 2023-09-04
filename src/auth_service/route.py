@@ -11,7 +11,7 @@ routes = [
     web.post('/api/v1.0/sign-out', sign_out),
 
     web.get('/api/v1.0/profiles', get_account_by_id_or_phone_number),
-    web.get('/api/v1.0/profiles/username-check', username_check),
+    web.post('/api/v1.0/profiles/username-check', username_check),
     web.get('/api/v1.0/my/profiles', get_my_account),
     web.post('/api/v1.0/my/profiles', account_create),
 
