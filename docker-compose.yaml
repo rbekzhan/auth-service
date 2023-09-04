@@ -11,3 +11,11 @@ services:
         environment:
             - DB_SERVICE_IP=77.240.38.184
             - DB_SERVICE_PORT=60002
+
+    redis:
+        image: redis:latest
+        expose:
+            - 6379
+        ports:
+            - "6379:6379"
+        restart: "always"

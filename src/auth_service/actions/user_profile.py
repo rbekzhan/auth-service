@@ -9,3 +9,10 @@ async def action_create_user_profile(event: Event, db_manager: DBManager):
     user_profile.is_valid_username()
 
     return await db_manager.create_account(user_profile=user_profile)
+
+
+async def action_check_username_profile(username: str, db_manager: DBManager):
+    user_username = UserProfile(username=username)
+    user_username.is_valid_username()
+
+    return await db_manager.username_check(username=username)

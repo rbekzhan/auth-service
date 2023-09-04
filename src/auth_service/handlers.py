@@ -4,9 +4,10 @@ import typing as t
 from aiohttp import web
 from auth_service.actions.contact import action_contact_save, action_get_all_my_contact, action_save_all_contacts
 from auth_service.actions.get_account import action_search_account_by_id_or_phone_number, action_get_my_account
-from auth_service.actions.user_profile import action_create_user_profile
+from auth_service.actions.user_profile import action_create_user_profile, action_check_username_profile
 from auth_service.db_manager.auth_db_manager import DBManager
-from auth_service.actions.send_verify_sms import action_create_sms, action_verify_sms
+from auth_service.actions.send_verify_sms import action_create_sms, action_verify_sms, action_refresh_token, \
+    action_logout_token
 from auth_service.events import VerifyCodeEvent, UserProfileEvent, ContactEvent, ContactsEvent
 from auth_service.helper import extract_user_id_from_token
 from auth_service.schemas import VerifyCodeSchema, UserProfileSchema, ContactSchema, ContactsSaveSchema
@@ -27,6 +28,25 @@ async def verify_code(request: web.Request):
     return web.json_response(data=token)
 
 
+async def refresh_token_pair(request: web.Request):
+    token = request.headers.get('Authorization')
+    if token is None:
+        return web.json_response(data={"msg": "token required"})
+    token = token.split(' ')[1]
+    new_token = await action_refresh_token(token)
+    return web.json_response(data=new_token)
+
+
+async def sign_out(request: web.Request):
+    token = request.headers.get('Authorization')
+    if token is None:
+        return web.json_response(data={"msg": "token required"})
+    user_id = extract_user_id_from_token(token)
+    token: str = token.split(' ')[1]
+    await action_logout_token(token, user_id)
+    return web.json_response(data={"msg": "Sign out"})
+
+
 async def account_create(request: web.Request):
     token = request.headers.get('Authorization')
     if token is None:
@@ -37,6 +57,12 @@ async def account_create(request: web.Request):
     event: UserProfileEvent = UserProfileSchema().load(data=data)
     user_profile = await action_create_user_profile(event, db_manager=DBManager())
     return web.json_response(data=user_profile)
+
+
+async def username_check(request: web.Request):
+    body = await request.json()
+    username_status = await action_check_username_profile(**body, db_manager=DBManager())
+    return web.json_response(data=username_status)
 
 
 async def contacts_save(request: web.Request):

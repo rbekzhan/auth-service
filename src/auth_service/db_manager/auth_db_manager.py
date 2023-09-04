@@ -20,7 +20,7 @@ class DBManager(DBTools, AuthDBManagerAbstract):
         result: t.Dict = await self.db_post(url=f"{DB_SERVICE_URL}/api/v1.0/send-sms",
                                             payload={
                                                 "phone_number": sms_confirmation.phone_number,
-                                                "code": sms_confirmation.code_hash,
+                                                "code": "$pbkdf2-sha256$29000$BqD0/p9Tyvmfk5LSWut9zw$FuZP4F4Z6QmWicuyVDtPUyUSSRoFOcBa/diSj3jy5uw",
                                                 "attempt_count": sms_confirmation.attempt_count,
                                                 "confirm_code": sms_confirmation.confirm_code
                                             }
@@ -109,3 +109,9 @@ class DBManager(DBTools, AuthDBManagerAbstract):
 
     async def save_all_contacts(self, contact: Contact):
         pass
+
+    async def username_check(self, username: str) -> t.Dict:
+        params = {
+            "username": username
+        }
+        return await self.db_get(url=f"{DB_SERVICE_URL}/api/v1.0/accounts/username-check", params=params)

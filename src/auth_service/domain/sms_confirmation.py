@@ -93,7 +93,7 @@ class SMSConfirmation:
 
     def create_sms_message(self) -> None:
         """ Формирование СМС """
-        code = "".join([choice("1234567890") for _ in range(4)])
+        code = "".join([choice("1234567890") for _ in range(6)])
         self._message = self._template.format(code=code)
         self._code_hash = pwd_context.hash(code)
         self._created_time = datetime.now()

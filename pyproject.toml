@@ -18,6 +18,7 @@ pyjwt = "^2.8.0"
 pytest-asyncio = "^0.21.1"
 aiomisc = "^17.3.21"
 aiohttp-cors = "^0.7.0"
+redis = "^5.0.0"
 
 
 [build-system]

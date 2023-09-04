@@ -1,14 +1,26 @@
-import secrets
 import typing
-from datetime import timedelta, datetime
-
 import jwt
 
 from abc import ABC, abstractmethod
-from auth_service.config import SECRET_KEY
+from datetime import timedelta, datetime
+from auth_service.config import SECRET_KEY, redis_client
 from auth_service.db_manager.auth_db_manager_abstract import AuthDBManagerAbstract as DBManager
 from auth_service.domain.sms_confirmation import SMSConfirmation
 from auth_service.domain.user import User
+
+
+def generate_tokens(user_id):
+    access_token = jwt.encode({"user_id": user_id, "exp": datetime.utcnow() + timedelta(minutes=20)},
+                              SECRET_KEY, algorithm="HS256")
+    refresh_token = jwt.encode({"user_id": user_id, "exp": datetime.utcnow() + timedelta(days=30)}, SECRET_KEY,
+                               algorithm="HS256")
+
+    return {"access_token": access_token, "refresh_token": refresh_token}
+
+
+def store_refresh_token_in_redis(user_id, refresh_token):
+    refresh_key = f"refresh:{user_id}"
+    redis_client.sadd(refresh_key, refresh_token)
 
 
 class SendSmsInterface(ABC):
@@ -47,30 +59,50 @@ async def action_verify_sms(event, db_manager: DBManager):
 
     await db_manager.update_sms_confirmation(sms_confirmation=sms_confirmation)
     my_user_profile = await db_manager.get_my_account(user_id=sms_confirmation.user_id)
-
+    user = {"user": my_user_profile}
     if sms_confirmation.confirm_code:
-        def generate_refresh_token(user_id):
-            refresh_token_payload = {
-                "user_id": user_id,
-                "exp": datetime.utcnow() + timedelta(days=30)  # Например, токен действителен 30 дней
-            }
-            refresh_token = jwt.encode(refresh_token_payload, SECRET_KEY, algorithm="HS256")
-            return refresh_token
 
-        token = {"access_token": jwt.encode({"user_id": sms_confirmation.user_id}, SECRET_KEY, algorithm="HS256"),
-                 "refresh_token": jwt.encode({"user_id": sms_confirmation.user_id,
-                                              "exp": datetime.utcnow() + timedelta(days=30)}, SECRET_KEY,
-                                             algorithm="HS256"),
+        tokens = generate_tokens(user_id=sms_confirmation.user_id)
+        store_refresh_token_in_redis(sms_confirmation.user_id, tokens["refresh_token"])
 
-                 }
-        if token and my_user_profile['username']:
-            return token | my_user_profile
+        if tokens and my_user_profile['username']:
+            return tokens | user
 
-        elif token:
-            return token
+        elif tokens:
+            return tokens
 
     return {"msg": "code is not correct"}
 
 
-async def action_refresh_token():
-    pass
+async def action_refresh_token(token):
+    try:
+        decoded_refresh_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        user_id = decoded_refresh_token.get('user_id')
+        refresh_key = f"refresh:{user_id}"
+        stored_refresh_tokens = redis_client.smembers(refresh_key)
+        provided_token_bytes = token.encode('utf-8')
+
+        if provided_token_bytes in stored_refresh_tokens:
+            redis_client.srem(refresh_key, provided_token_bytes)
+
+            new_tokens = generate_tokens(user_id)
+            store_refresh_token_in_redis(user_id, new_tokens["refresh_token"])
+
+            return new_tokens
+        else:
+            raise Exception("Invalid refresh token")
+
+    except jwt.ExpiredSignatureError:
+        raise Exception("Refresh token has expired.")
+
+
+async def action_logout_token(token, user_id):
+    decoded_access_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+    refresh_key = f"refresh:{user_id}"
+    stored_refresh_tokens = redis_client.smembers(refresh_key)
+    token_encode = jwt.encode({"user_id": user_id, "exp": decoded_access_token.get('exp') + 2590800}, SECRET_KEY,
+                              algorithm="HS256")
+    provided_token_bytes = token_encode.encode('utf-8')
+    if provided_token_bytes in stored_refresh_tokens:
+        redis_client.srem(refresh_key, provided_token_bytes)
+        redis_client.sadd("blacklist_access_tokens", token)

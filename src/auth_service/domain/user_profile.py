@@ -1,12 +1,13 @@
 import re
+import uuid
 
 from auth_service.exception import UsernameLengthCheck, EnglishLettersOnly, UsernameFormatCheck
 
 
 class UserProfile:
     def __init__(self,
-                 user_id: str,
                  username: str,
+                 user_id: uuid = None,
                  first_name: str = None,
                  last_name: str = None,
                  avatar_path: str = None,
