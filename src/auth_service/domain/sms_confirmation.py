@@ -2,6 +2,7 @@ from random import choice
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
 from auth_service.domain.user import User
+from auth_service.exception import SMSCodeExpired, SMSCodeWasActivated, TooManyTries
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
@@ -89,7 +90,7 @@ class SMSConfirmation:
 
     def check(self):
         if self.is_life_sms_confirmation and self.is_sms_lifetime_status:
-            raise ValueError("10 min block")
+            raise TooManyTries(message="10 min block")
 
     def create_sms_message(self) -> None:
         """ Формирование СМС """
@@ -101,11 +102,11 @@ class SMSConfirmation:
     def confirm_sms_code(self, code) -> bool:
         """ Исключения проверки смс кода """
         if self._confirm_code:
-            raise NotImplementedError("СМС код уже был активирован")
+            raise SMSCodeWasActivated(message="СМС код уже был активирован")
         if self._attempt_count >= 5:
-            raise NotImplementedError("Слишком много попыток")
+            raise TooManyTries(message="Слишком много попыток")
         if not self.is_sms_lifetime_status:
-            raise NotImplementedError("СМС код устарел")
+            raise SMSCodeExpired(message="СМС код устарел")
         self._attempt_count += 1
         if pwd_context.verify(code, self._code_hash):
             self._confirmed_client_code = code
