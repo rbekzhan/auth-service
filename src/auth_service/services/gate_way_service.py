@@ -24,7 +24,6 @@ def json_error(status_code: int, exception: Exception) -> web.Response:
     return web.Response(
         status=status_code,
         body=json.dumps({
-            "error": exception.__class__.__name__,
             "detail": message,
             "code": code
         }).encode("utf-8"),
