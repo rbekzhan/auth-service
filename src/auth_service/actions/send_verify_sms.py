@@ -7,6 +7,7 @@ from auth_service.config import SECRET_KEY, redis_client
 from auth_service.db_manager.auth_db_manager_abstract import AuthDBManagerAbstract as DBManager
 from auth_service.domain.sms_confirmation import SMSConfirmation
 from auth_service.domain.user import User
+from auth_service.exception import NotCorrectCode, ExpiredSignatureError
 
 
 def generate_tokens(user_id):
@@ -51,27 +52,23 @@ async def action_create_sms(phone_number: str, db_manager: DBManager):
 
 async def action_verify_sms(event, db_manager: DBManager):
     sms_confirmation: SMSConfirmation = await db_manager.get_sms_confirmation(phone_number=event.phone_number)
-    sms_confirmation.confirm_sms_code(code=event.code)
-
+    result: bool = sms_confirmation.confirm_sms_code(code=event.code)
     if sms_confirmation.confirm_code:
-        user = User(phone_number=event.phone_number)
+        user = User(phone_number=sms_confirmation.phone_number)
         sms_confirmation.set_user(user=user)
-
     await db_manager.update_sms_confirmation(sms_confirmation=sms_confirmation)
+    if result is False:
+        raise NotCorrectCode(message="Неверный код подтверждения", code=2)
     my_user_profile = await db_manager.get_my_account(user_id=sms_confirmation.user_id)
     user = {"user": my_user_profile}
-    if sms_confirmation.confirm_code:
+    tokens = generate_tokens(user_id=sms_confirmation.user_id)
+    store_refresh_token_in_redis(sms_confirmation.user_id, tokens["refresh_token"])
 
-        tokens = generate_tokens(user_id=sms_confirmation.user_id)
-        store_refresh_token_in_redis(sms_confirmation.user_id, tokens["refresh_token"])
+    if tokens and my_user_profile["username"]:
+        return tokens | user
 
-        if tokens and my_user_profile['username']:
-            return tokens | user
-
-        elif tokens:
-            return tokens
-
-    return {"msg": "code is not correct"}
+    elif tokens:
+        return tokens
 
 
 async def action_refresh_token(token):
@@ -93,7 +90,7 @@ async def action_refresh_token(token):
             raise Exception("Invalid refresh token")
 
     except jwt.ExpiredSignatureError:
-        raise Exception("Refresh token has expired.")
+        raise ExpiredSignatureError(message="Время действия токена истекло", code=4)
 
 
 async def action_logout_token(token, user_id):

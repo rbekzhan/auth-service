@@ -17,24 +17,63 @@ class CustomBaseException(Exception):
 
 
 class SMSCodeExpired(CustomBaseException):
-    def __init__(self, status_code: int = None, message: str = None):
+    def __init__(self, code: int, status_code: int = None, message: str = None):
         self._status_code = status_code or 403
+        self._code = code
         self._message = message or self.__class__.__name__
         super().__init__(self._status_code, self._message)
+
+    @property
+    def code(self) -> int:
+        return self._code
 
 
 class SMSCodeWasActivated(CustomBaseException):
-    def __init__(self, status_code: int = None, message: str = None):
+    def __init__(self, code: int, status_code: int = None, message: str = None):
         self._status_code = status_code or 400
+        self._code = code
         self._message = message or self.__class__.__name__
         super().__init__(self._status_code, self._message)
+
+    @property
+    def code(self) -> int:
+        return self._code
 
 
 class TooManyTries(CustomBaseException):
-    def __init__(self, status_code: int = None, message: str = None):
+    def __init__(self, code: int, status_code: int = None, message: str = None):
         self._status_code = status_code or 429
+        self._code = code
         self._message = message or self.__class__.__name__
         super().__init__(self._status_code, self._message)
+
+    @property
+    def code(self) -> int:
+        return self._code
+
+
+class NotCorrectCode(CustomBaseException):
+    def __init__(self, code: int, status_code: int = None, message: str = None):
+        self._status_code = status_code or 404
+        self._code = code
+        self._message = message or self.__class__.__name__
+        super().__init__(self._status_code, self._message)
+
+    @property
+    def code(self) -> int:
+        return self._code
+
+
+class ExpiredSignatureError(CustomBaseException):
+    def __init__(self, code: int, status_code: int = None, message: str = None):
+        self._status_code = status_code or 404
+        self._code = code
+        self._message = message or self.__class__.__name__
+        super().__init__(self._status_code, self._message)
+
+    @property
+    def code(self) -> int:
+        return self._code
 
 
 class CustomException(Exception):

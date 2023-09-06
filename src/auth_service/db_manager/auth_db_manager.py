@@ -17,14 +17,14 @@ log = logging.getLogger(__name__)
 
 class DBManager(DBTools, AuthDBManagerAbstract):
     async def save_sms_confirmation(self, sms_confirmation: SMSConfirmation):
-        result: t.Dict = await self.db_post(url=f"{DB_SERVICE_URL}/api/v1.0/send-sms",
-                                            payload={
-                                                "phone_number": sms_confirmation.phone_number,
-                                                "code": "$pbkdf2-sha256$29000$BqD0/p9Tyvmfk5LSWut9zw$FuZP4F4Z6QmWicuyVDtPUyUSSRoFOcBa/diSj3jy5uw",
-                                                "attempt_count": sms_confirmation.attempt_count,
-                                                "confirm_code": sms_confirmation.confirm_code
-                                            }
-                                            )
+        await self.db_post(url=f"{DB_SERVICE_URL}/api/v1.0/send-sms",
+                           payload={
+                               "phone_number": sms_confirmation.phone_number,
+                               "code": "$pbkdf2-sha256$29000$BqD0/p9Tyvmfk5LSWut9zw$FuZP4F4Z6QmWicuyVDtPUyUSSRoFOcBa/diSj3jy5uw",
+                               "attempt_count": sms_confirmation.attempt_count,
+                               "confirm_code": sms_confirmation.confirm_code
+                           }
+                           )
 
     async def get_sms_confirmation(self, phone_number: str) -> (SMSConfirmation, None):
         try:
@@ -35,7 +35,7 @@ class DBManager(DBTools, AuthDBManagerAbstract):
         if result["user_id"]:
             user = User(phone_number=result["phone_number"], user_id=str(result["user_id"]))
         else:
-            user = None
+            user = User(phone_number=result["phone_number"])
 
         sms_confirmation = SMSConfirmation(
             sms_confirmation_id=str(result["sms_id"]),
@@ -45,21 +45,21 @@ class DBManager(DBTools, AuthDBManagerAbstract):
             attempt_count=result["attempt_count"],
             created_time=datetime.strptime(result["created_time"], '%Y-%m-%d %H:%M:%S.%f')
         )
-
         return sms_confirmation
 
     async def update_sms_confirmation(self, sms_confirmation: SMSConfirmation) -> None:
-        result: t.Dict = await self.db_post(url=f"{DB_SERVICE_URL}/api/v1.0/update-sms",
-                                            payload={
-                                                "phone_number": sms_confirmation.phone_number,
-                                                "user_id": sms_confirmation.user_id,
-                                                "sms_id": sms_confirmation.sms_confirmation_id,
-                                                "code": sms_confirmation.code_hash,
-                                                "attempt_count": sms_confirmation.attempt_count,
-                                                "confirm_code": sms_confirmation.confirm_code,
-                                                "confirmed_client_code": sms_confirmation.confirmed_client_code
-                                            }
-                                            )
+        payload = {
+            "phone_number": sms_confirmation.phone_number,
+            "user_id": sms_confirmation.user_id,
+            "sms_id": sms_confirmation.sms_confirmation_id,
+            "code": sms_confirmation.code_hash,
+            "attempt_count": sms_confirmation.attempt_count,
+            "confirm_code": sms_confirmation.confirm_code,
+            "confirmed_client_code": sms_confirmation.confirmed_client_code
+        }
+        await self.db_post(url=f"{DB_SERVICE_URL}/api/v1.0/update-sms",
+                           payload=payload
+                           )
 
     async def create_account(self, user_profile: UserProfile) -> t.Dict:
         result = await self.db_post(url=f"{DB_SERVICE_URL}/api/v1.0/accounts",
@@ -76,14 +76,14 @@ class DBManager(DBTools, AuthDBManagerAbstract):
         return result
 
     async def contact_save(self, contact: Contact) -> None:
-        result = await self.db_post(url=f"{DB_SERVICE_URL}/api/v1.0/contacts",
-                                    payload={
-                                        "user_id": str(contact.user_id),
-                                        "phone_number": contact.phone_number,
-                                        "name": contact.first_name,
-                                        "surname": contact.last_name
-                                    }
-                                    )
+        await self.db_post(url=f"{DB_SERVICE_URL}/api/v1.0/contacts",
+                           payload={
+                               "user_id": str(contact.user_id),
+                               "phone_number": contact.phone_number,
+                               "name": contact.first_name,
+                               "surname": contact.last_name
+                           }
+                           )
 
     async def search_contact_account(self, user_id, phone_number) -> t.Dict:
         result = await self.db_get(url=f"{DB_SERVICE_URL}/api/v1.0/contacts/{phone_number}/{user_id}")

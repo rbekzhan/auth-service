@@ -90,7 +90,8 @@ class SMSConfirmation:
 
     def check(self):
         if self.is_life_sms_confirmation and self.is_sms_lifetime_status:
-            raise TooManyTries(message="10 min block")
+            raise TooManyTries(message="Отправка сообщений на этот номер заблокирована попробуйте через 10 минут",
+                               code=1)
 
     def create_sms_message(self) -> None:
         """ Формирование СМС """
@@ -102,11 +103,11 @@ class SMSConfirmation:
     def confirm_sms_code(self, code) -> bool:
         """ Исключения проверки смс кода """
         if self._confirm_code:
-            raise SMSCodeWasActivated(message="СМС код уже был активирован")
+            raise SMSCodeWasActivated(message="СМС код уже был активирован", code=1)
         if self._attempt_count >= 5:
-            raise TooManyTries(message="Слишком много попыток")
+            raise TooManyTries(message="Превышено количество попыток ввода кода подтверждения", code=3)
         if not self.is_sms_lifetime_status:
-            raise SMSCodeExpired(message="СМС код устарел")
+            raise SMSCodeExpired(message="СМС код устарел", code=5)
         self._attempt_count += 1
         if pwd_context.verify(code, self._code_hash):
             self._confirmed_client_code = code

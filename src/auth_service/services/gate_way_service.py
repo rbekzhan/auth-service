@@ -10,6 +10,7 @@ from aiomisc.service.aiohttp import AIOHTTPService
 def json_error(status_code: int, exception: Exception) -> web.Response:
 
     message = str(exception)
+    code = -1
 
     if hasattr(exception, "status_code"):
         status_code = exception.status_code
@@ -17,11 +18,15 @@ def json_error(status_code: int, exception: Exception) -> web.Response:
     if hasattr(exception, "message"):
         message = exception.message
 
+    if hasattr(exception, "code"):
+        code = exception.code
+
     return web.Response(
         status=status_code,
         body=json.dumps({
             "error": exception.__class__.__name__,
-            "detail": message
+            "detail": message,
+            "code": code
         }).encode("utf-8"),
         content_type="application/json")
 
