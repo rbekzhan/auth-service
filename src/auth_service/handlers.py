@@ -1,3 +1,4 @@
+import asyncio
 import json
 import typing as t
 
@@ -119,5 +120,5 @@ async def save_all_contacts(request: web.Request):
     for contact in contacts:
         event: ContactsEvent = ContactsSaveSchema().load(data=contact | {"user_id": user_id})
         events.append(event)
-    await action_save_all_contacts(user_id=user_id, event=events, db_manager=DBManager())
+    asyncio.create_task(action_save_all_contacts(user_id=user_id, events=events, db_manager=DBManager()))
     return web.json_response(data={'msg': 'contacts saved'})
