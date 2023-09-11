@@ -62,7 +62,7 @@ async def action_create_sms(phone_number: str, db_manager: DBManager):
     sms_verification.create_sms_message()
     user.add_sms_verification(sms_verification=sms_verification)
 
-    return await db_manager.save_user_state(user=user)
+    await db_manager.save_user_state(user=user)
 
 
 async def action_verify_sms(event: Event, db_manager: DBManager):

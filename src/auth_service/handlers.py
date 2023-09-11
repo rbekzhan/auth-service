@@ -17,8 +17,10 @@ from auth_service.schemas import VerifyCodeSchema, UserProfileSchema, ContactSch
 
 async def send_sms_user(request: web.Request) -> json:
     body: t.Dict = await request.json()
-    result: t.Dict = await action_create_sms(phone_number=body['phone_number'], db_manager=DBManager())
-    return web.json_response(data=result)
+    await action_create_sms(phone_number=body['phone_number'], db_manager=DBManager())
+    return web.json_response(data={
+        "msg": "success"
+    })
 
 
 async def verify_code(request: web.Request):
