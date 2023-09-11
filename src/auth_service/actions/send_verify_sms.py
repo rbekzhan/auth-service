@@ -5,16 +5,31 @@ from abc import ABC, abstractmethod
 from datetime import timedelta, datetime
 from auth_service.config import SECRET_KEY, redis_client
 from auth_service.db_manager.auth_db_manager_abstract import AuthDBManagerAbstract as DBManager
-from auth_service.domain.sms_confirmation import SMSConfirmation
+from auth_service.domain.sms_confirmation import SMSVerification
 from auth_service.domain.user import User
-from auth_service.exception import NotCorrectCode, ExpiredSignatureError
+from auth_service.events import VerifyCodeEvent as Event
+from auth_service.exception import ExpiredSignatureError, NotFoundError, NotCorrectCode
 
 
 def generate_tokens(user_id):
-    access_token = jwt.encode({"user_id": user_id, "exp": datetime.utcnow() + timedelta(minutes=20)},
-                              SECRET_KEY, algorithm="HS256")
-    refresh_token = jwt.encode({"user_id": user_id, "exp": datetime.utcnow() + timedelta(days=30)}, SECRET_KEY,
-                               algorithm="HS256")
+    access_token = jwt.encode(
+        {
+            "user_id": user_id,
+            "exp": datetime.utcnow() + timedelta(minutes=20)
+        },
+        SECRET_KEY, algorithm="HS256"
+    )
+
+    refresh_token = jwt.encode(
+        {
+            "user_id": user_id,
+            "exp": datetime.utcnow() + timedelta(days=30)
+        },
+        SECRET_KEY,
+        algorithm="HS256"
+    )
+
+    store_refresh_token_in_redis(user_id, refresh_token)
 
     return {"access_token": access_token, "refresh_token": refresh_token}
 
@@ -36,39 +51,35 @@ class TOOAbilay(SendSmsInterface):
 
 
 async def action_create_sms(phone_number: str, db_manager: DBManager):
-    sms_confirmation: SMSConfirmation = await db_manager.get_sms_confirmation(phone_number=phone_number)
-    if sms_confirmation:
-        sms_confirmation.check()
+    try:
+        user: User = await db_manager.get_user_by_phone_number(phone_number=phone_number)
+        last_sms_verification: SMSVerification = user.get_last_sms_verification()
+        last_sms_verification.check()
+    except NotFoundError:
+        user = User(phone_number=phone_number)
 
-    user = User(phone_number=phone_number)
-    sms_confirmation = SMSConfirmation(user=user)
-    sms_confirmation.create_sms_message()
-    await db_manager.save_sms_confirmation(sms_confirmation=sms_confirmation)
+    sms_verification = SMSVerification(phone_number=phone_number)
+    sms_verification.create_sms_message()
+    user.add_sms_verification(sms_verification=sms_verification)
 
-    sms_company = TOOAbilay()
-    result = sms_company.send_sms(phone_number=phone_number)
-    return result
+    return await db_manager.save_user_state(user=user)
 
 
-async def action_verify_sms(event, db_manager: DBManager):
-    sms_confirmation: SMSConfirmation = await db_manager.get_sms_confirmation(phone_number=event.phone_number)
-    result: bool = sms_confirmation.confirm_sms_code(code=event.code)
-    if sms_confirmation.confirm_code:
-        user = User(phone_number=sms_confirmation.phone_number)
-        sms_confirmation.set_user(user=user)
-    await db_manager.update_sms_confirmation(sms_confirmation=sms_confirmation)
-    if result is False:
+async def action_verify_sms(event: Event, db_manager: DBManager):
+    user: User = await db_manager.get_user_by_phone_number(phone_number=event.phone_number)
+    sms_confirmation: SMSVerification = user.get_last_sms_verification()
+    is_confirmed: bool = sms_confirmation.confirm_sms_code(code=event.code)
+    await db_manager.save_user_state(user=user)
+
+    if is_confirmed is False:
         raise NotCorrectCode(message="Неверный код подтверждения", code=2)
-    my_user_profile = await db_manager.get_my_account(user_id=sms_confirmation.user_id)
-    user = {"user": my_user_profile}
-    tokens = generate_tokens(user_id=sms_confirmation.user_id)
-    store_refresh_token_in_redis(sms_confirmation.user_id, tokens["refresh_token"])
 
-    if tokens and my_user_profile["username"]:
-        return tokens | user
+    tokens: typing.Dict = generate_tokens(user_id=user.user_id)
 
-    elif tokens:
-        return tokens
+    if user.profile:
+        return tokens | user.profile_to_dict()
+
+    return tokens
 
 
 async def action_refresh_token(token):
@@ -83,7 +94,6 @@ async def action_refresh_token(token):
             redis_client.srem(refresh_key, provided_token_bytes)
 
             new_tokens = generate_tokens(user_id)
-            store_refresh_token_in_redis(user_id, new_tokens["refresh_token"])
 
             return new_tokens
         else:

@@ -111,12 +111,11 @@ async def save_all_contacts(request: web.Request):
         return web.json_response(data={"msg": "token required"})
     user_id = extract_user_id_from_token(token)
     body: t.Dict = await request.json()
-
-    contacts = body.get('contacts')
+    contacts = body.get('contacts', None)
 
     events: t.List[ContactsEvent] = []
     for contact in contacts:
         event: ContactsEvent = ContactsSaveSchema().load(data=contact | {"user_id": user_id})
         events.append(event)
-    await action_save_all_contacts(event=events, db_manager=DBManager())
-    return web.json_response(data={'result': 'test'})
+    await action_save_all_contacts(user_id=user_id, event=events, db_manager=DBManager())
+    return web.json_response(data={'msg': 'contacts saved'})

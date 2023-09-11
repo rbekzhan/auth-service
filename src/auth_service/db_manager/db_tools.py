@@ -17,7 +17,8 @@ class DBTools:
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url=url, params=params) as resp:
-                    result: t.Dict = await resp.json()
+                    if resp.status == 200:
+                        return await resp.json()
                     if resp.status == 404:
                         raise NotFoundError("Not found")
         except NotFoundError:
@@ -25,8 +26,6 @@ class DBTools:
         except Exception as e:
             self._log.exception(e)
             raise ValueError("Something went wrong")
-
-        return result
 
     async def db_post(self, url: str, payload: t.Dict) -> t.Any:
         try:

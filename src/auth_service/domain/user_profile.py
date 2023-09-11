@@ -5,25 +5,33 @@ from auth_service.exception import UsernameLengthCheck, EnglishLettersOnly, User
 
 
 class UserProfile:
-    def __init__(self,
-                 username: str,
-                 user_id: uuid = None,
-                 first_name: str = None,
-                 last_name: str = None,
-                 avatar_path: str = None,
-                 bio: str = None,
-                 email: str = None):
+    def __init__(
+            self,
+            user_profile_id: uuid = None,
+            user_id: uuid = None,
+            username: str = None,
+            name: str = None,
+            surname: str = None,
+            avatar_path: str = None,
+            bio: str = None,
+            email: str = None
+    ):
+        self._user_profile_id = user_profile_id or uuid.uuid4()
         self._user_id = user_id
         self._username = username
-        self._first_name = first_name
-        self._last_name = last_name
+        self._first_name = name
+        self._last_name = surname
         self._avatar_path = avatar_path
         self._bio = bio
         self._email = email
 
     @property
-    def user_id(self):
-        return self._user_id
+    def user_profile_id(self) -> str:
+        return str(self._user_profile_id)
+
+    @property
+    def user_id(self) -> str:
+        return str(self._user_id)
 
     @property
     def username(self) -> str:
@@ -31,11 +39,11 @@ class UserProfile:
         return self._username
 
     @property
-    def first_name(self) -> str:
+    def name(self) -> str:
         return self._first_name
 
     @property
-    def last_name(self) -> str:
+    def surname(self) -> str:
         return self._last_name
 
     @property

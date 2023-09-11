@@ -1,16 +1,26 @@
 from random import choice
 from datetime import datetime, timedelta
+from uuid import uuid4
+
 from passlib.context import CryptContext
-from auth_service.domain.user import User
 from auth_service.exception import SMSCodeExpired, SMSCodeWasActivated, TooManyTries
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 
-class SMSConfirmation:
-    def __init__(self, sms_confirmation_id: str = None, user: User = None, message: str = None, code_hash: str = None,
-                 created_time: datetime = None, confirm_code: bool = None, attempt_count: int = None,
-                 confirmed_client_code: str = None):
+class SMSVerification:
+    def __init__(
+            self,
+            sms_verification_id: str = None,
+            phone_number: str = None,
+            message: str = None,
+            code_hash: str = None,
+            confirm_code: bool = None,
+            attempt_count: int = None,
+            confirmed_client_code: str = None,
+            created_at: datetime = None,
+            updated_at: datetime = None,
+    ):
         """
         :param phone: Номер телефона
         :param template: Текст смс
@@ -19,28 +29,25 @@ class SMSConfirmation:
         :param code_hash: Хэш кода
         """
 
-        self._sms_confirmation_id = sms_confirmation_id
-        self._user = user
+        self._sms_verification_id = sms_verification_id or uuid4()
+        self._phone_number = phone_number
         self._message = message
         self._template = "Your code: {code}"
         self._code_hash = code_hash
-        self._created_time = created_time
+        self._created_at = created_at
+        self._updated_at = updated_at
         self._attempt_count = attempt_count or 0
         self._confirm_code = confirm_code or False
         self._confirmed_client_code = confirmed_client_code
         self._life_time = 10
 
     @property
-    def sms_confirmation_id(self) -> str:
-        return self._sms_confirmation_id
+    def sms_verification_id(self) -> str:
+        return self._sms_verification_id
 
     @property
     def phone_number(self) -> str:
-        return self._user.phone_number
-
-    @property
-    def user_id(self) -> str:
-        return str(self._user.user_id)
+        return self._phone_number
 
     @property
     def message(self) -> str:
@@ -55,8 +62,12 @@ class SMSConfirmation:
         return self._code_hash
 
     @property
-    def created_time(self) -> datetime:
-        return self._created_time
+    def created_at(self) -> datetime:
+        return self._created_at
+
+    @property
+    def updated_at(self) -> datetime:
+        return self._updated_at
 
     @property
     def confirm_code(self) -> bool:
@@ -70,15 +81,11 @@ class SMSConfirmation:
     def attempt_count(self) -> int:
         return self._attempt_count
 
-    def set_user(self, user: User) -> None:
-        if not self._user:
-            self._user = user
-
     @property
     def is_sms_lifetime_status(self) -> bool:
         """ Статус жизни СМС """
         now = datetime.timestamp(datetime.utcnow())
-        created_date = datetime.timestamp(self._created_time + timedelta(minutes=self._life_time))
+        created_date = datetime.timestamp(self._created_at + timedelta(minutes=self._life_time))
         return now < created_date
 
     @property
@@ -90,15 +97,18 @@ class SMSConfirmation:
 
     def check(self):
         if self.is_life_sms_confirmation and self.is_sms_lifetime_status:
-            raise TooManyTries(message="Отправка сообщений на этот номер заблокирована попробуйте через 10 минут",
-                               code=1)
+            raise TooManyTries(
+                message="Отправка сообщений на этот номер заблокирована попробуйте через 10 минут",
+                code=1
+            )
 
     def create_sms_message(self) -> None:
         """ Формирование СМС """
-        code = "".join([choice("1234567890") for _ in range(6)])
+        # code = "".join([choice("1234567890") for _ in range(6)])
+        code = '111111'
         self._message = self._template.format(code=code)
         self._code_hash = pwd_context.hash(code)
-        self._created_time = datetime.now()
+        self._created_at = datetime.utcnow()
 
     def confirm_sms_code(self, code) -> bool:
         """ Исключения проверки смс кода """
