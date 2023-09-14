@@ -20,6 +20,7 @@ aiomisc = "^17.3.21"
 aiohttp-cors = "^0.7.0"
 redis = "^5.0.0"
 aio-pika = "^9.2.2"
+poethepoet = "^0.22.1"
 
 
 [build-system]
